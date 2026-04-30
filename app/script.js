@@ -7,7 +7,21 @@ const filterButtons = document.querySelectorAll(".filter-button");
 // Здесь хранятся все задачи приложения.
 // Сначала пробуем взять задачи из localStorage.
 const savedTasks = localStorage.getItem("tasks");
-const tasks = savedTasks ? JSON.parse(savedTasks) : [];
+const loadedTasks = savedTasks ? JSON.parse(savedTasks) : [];
+
+// У старых сохранённых задач может не быть id, поэтому добавляем его.
+const tasks = loadedTasks.map(function (task, index) {
+  if (task.id) {
+    return task;
+  }
+
+  return {
+    id: Date.now() + index,
+    text: task.text,
+    completed: task.completed
+  };
+});
+
 let currentFilter = "all";
 
 // Эта функция сохраняет задачи в браузере.
@@ -47,8 +61,17 @@ function renderTasks() {
 
   const visibleTasks = getVisibleTasks();
 
+  if (visibleTasks.length === 0) {
+    const emptyItem = document.createElement("li");
+
+    emptyItem.className = "empty-state";
+    emptyItem.textContent = "Задач пока нет";
+    taskList.append(emptyItem);
+    updateCounter();
+    return;
+  }
+
   visibleTasks.forEach(function (task) {
-    const index = tasks.indexOf(task);
     const taskItem = document.createElement("li");
     const checkbox = document.createElement("input");
     const taskText = document.createElement("span");
@@ -66,16 +89,24 @@ function renderTasks() {
       taskItem.classList.add("completed");
     }
 
-    // Когда пользователь нажимает на чекбокс, меняем статус задачи.
+    // Когда пользователь нажимает на чекбокс, ищем задачу по id и меняем статус.
     checkbox.addEventListener("change", function () {
-      tasks[index].completed = checkbox.checked;
+      const currentTask = tasks.find(function (savedTask) {
+        return savedTask.id === task.id;
+      });
+
+      currentTask.completed = checkbox.checked;
       saveTasks();
       renderTasks();
     });
 
-    // Когда пользователь нажимает "Удалить", убираем задачу из массива.
+    // Когда пользователь нажимает "Удалить", ищем задачу по id и удаляем её.
     deleteButton.addEventListener("click", function () {
-      tasks.splice(index, 1);
+      const taskIndex = tasks.findIndex(function (savedTask) {
+        return savedTask.id === task.id;
+      });
+
+      tasks.splice(taskIndex, 1);
       saveTasks();
       renderTasks();
     });
@@ -98,6 +129,7 @@ taskForm.addEventListener("submit", function (event) {
   }
 
   tasks.push({
+    id: Date.now(),
     text: text,
     completed: false
   });
