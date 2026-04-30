@@ -74,9 +74,27 @@ h1 {
   height: 18px;
 }
 
+.task-item span {
+  flex: 1;
+}
+
 .task-item.completed span {
   color: #6b7280;
   text-decoration: line-through;
+}
+
+.delete-button {
+  padding: 6px 10px;
+  font-size: 14px;
+  color: #ffffff;
+  background: #dc2626;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background: #b91c1c;
 }
 
 @media (max-width: 480px) {
