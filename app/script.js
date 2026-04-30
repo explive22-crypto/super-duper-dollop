@@ -2,11 +2,13 @@ const taskForm = document.querySelector("#task-form");
 const taskInput = document.querySelector("#task-input");
 const taskList = document.querySelector("#task-list");
 const taskCounter = document.querySelector("#task-counter");
+const filterButtons = document.querySelectorAll(".filter-button");
 
 // Здесь хранятся все задачи приложения.
 // Сначала пробуем взять задачи из localStorage.
 const savedTasks = localStorage.getItem("tasks");
 const tasks = savedTasks ? JSON.parse(savedTasks) : [];
+let currentFilter = "all";
 
 // Эта функция сохраняет задачи в браузере.
 function saveTasks() {
@@ -22,11 +24,31 @@ function updateCounter() {
   taskCounter.textContent = "Выполнено: " + completedTasks.length + " из " + tasks.length;
 }
 
+// Эта функция выбирает, какие задачи показывать.
+function getVisibleTasks() {
+  if (currentFilter === "active") {
+    return tasks.filter(function (task) {
+      return !task.completed;
+    });
+  }
+
+  if (currentFilter === "completed") {
+    return tasks.filter(function (task) {
+      return task.completed;
+    });
+  }
+
+  return tasks;
+}
+
 // Эта функция заново рисует список задач на странице.
 function renderTasks() {
   taskList.innerHTML = "";
 
-  tasks.forEach(function (task, index) {
+  const visibleTasks = getVisibleTasks();
+
+  visibleTasks.forEach(function (task) {
+    const index = tasks.indexOf(task);
     const taskItem = document.createElement("li");
     const checkbox = document.createElement("input");
     const taskText = document.createElement("span");
@@ -84,6 +106,20 @@ taskForm.addEventListener("submit", function (event) {
   taskInput.value = "";
   taskInput.focus();
   renderTasks();
+});
+
+// Эти обработчики переключают фильтр задач.
+filterButtons.forEach(function (button) {
+  button.addEventListener("click", function () {
+    currentFilter = button.dataset.filter;
+
+    filterButtons.forEach(function (filterButton) {
+      filterButton.classList.remove("active");
+    });
+
+    button.classList.add("active");
+    renderTasks();
+  });
 });
 
 // Рисуем сохранённые задачи сразу после загрузки страницы.
