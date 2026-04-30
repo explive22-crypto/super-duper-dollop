@@ -3,10 +3,11 @@ const taskInput = document.querySelector("#task-input");
 const taskList = document.querySelector("#task-list");
 const taskCounter = document.querySelector("#task-counter");
 const filterButtons = document.querySelectorAll(".filter-button");
+const storageKey = "super-duper-dollop-tasks";
 
 // Здесь хранятся все задачи приложения.
 // Сначала пробуем взять задачи из localStorage.
-const savedTasks = localStorage.getItem("tasks");
+const savedTasks = localStorage.getItem(storageKey);
 const loadedTasks = savedTasks ? JSON.parse(savedTasks) : [];
 
 // У старых сохранённых задач может не быть id, поэтому добавляем его.
@@ -26,7 +27,7 @@ let currentFilter = "all";
 
 // Эта функция сохраняет задачи в браузере.
 function saveTasks() {
-  localStorage.setItem("tasks", JSON.stringify(tasks));
+  localStorage.setItem(storageKey, JSON.stringify(tasks));
 }
 
 // Эта функция обновляет текст счётчика.
@@ -95,6 +96,11 @@ function renderTasks() {
         return savedTask.id === task.id;
       });
 
+      // Если задача не найдена, просто выходим из функции.
+      if (!currentTask) {
+        return;
+      }
+
       currentTask.completed = checkbox.checked;
       saveTasks();
       renderTasks();
@@ -105,6 +111,11 @@ function renderTasks() {
       const taskIndex = tasks.findIndex(function (savedTask) {
         return savedTask.id === task.id;
       });
+
+      // Если индекс -1, значит задача не найдена.
+      if (taskIndex === -1) {
+        return;
+      }
 
       tasks.splice(taskIndex, 1);
       saveTasks();
