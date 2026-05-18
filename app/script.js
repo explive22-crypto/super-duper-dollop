@@ -5,30 +5,67 @@ const taskCounter = document.querySelector("#task-counter");
 const filterButtons = document.querySelectorAll(".filter-button");
 const storageKey = "super-duper-dollop-tasks";
 
-// Здесь хранятся все задачи приложения.
-// Сначала пробуем взять задачи из localStorage.
-const savedTasks = localStorage.getItem(storageKey);
-const loadedTasks = savedTasks ? JSON.parse(savedTasks) : [];
-
-// У старых сохранённых задач может не быть id, поэтому добавляем его.
-const tasks = loadedTasks.map(function (task, index) {
-  if (task.id) {
-    return task;
+// Создаём id для задачи.
+// В современных браузерах используем crypto.randomUUID().
+function createTaskId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
   }
 
-  return {
-    id: Date.now() + index,
-    text: task.text,
-    completed: task.completed
-  };
-});
+  return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+}
 
-let currentFilter = "all";
+// Безопасно читаем задачи из localStorage.
+// Если данные сломаны или это не массив, начинаем с пустого списка.
+function loadTasks() {
+  const savedTasks = localStorage.getItem(storageKey);
+
+  if (!savedTasks) {
+    return [];
+  }
+
+  try {
+    const parsedTasks = JSON.parse(savedTasks);
+
+    if (Array.isArray(parsedTasks)) {
+      return parsedTasks;
+    }
+  } catch (error) {
+    return [];
+  }
+
+  return [];
+}
 
 // Эта функция сохраняет задачи в браузере.
 function saveTasks() {
   localStorage.setItem(storageKey, JSON.stringify(tasks));
 }
+
+// Здесь хранятся все задачи приложения.
+const loadedTasks = loadTasks();
+let wasMigrated = false;
+
+// У старых сохранённых задач может не быть id, поэтому добавляем его.
+const tasks = loadedTasks.map(function (task) {
+  if (task.id) {
+    return task;
+  }
+
+  wasMigrated = true;
+
+  return {
+    id: createTaskId(),
+    text: task.text,
+    completed: task.completed
+  };
+});
+
+if (wasMigrated) {
+  saveTasks();
+}
+
+let currentFilter = "all";
 
 // Эта функция обновляет текст счётчика.
 function updateCounter() {
@@ -140,7 +177,7 @@ taskForm.addEventListener("submit", function (event) {
   }
 
   tasks.push({
-    id: Date.now(),
+    id: createTaskId(),
     text: text,
     completed: false
   });
