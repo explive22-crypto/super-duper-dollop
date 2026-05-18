@@ -38,6 +38,10 @@
 
 - [Идея приложения](docs/idea.md)
 - [Как запустить и проверить приложение](docs/how-to-run.md)
+- [Roadmap](docs/roadmap.md)
+- [Project status](docs/status.md)
+- [Manual QA](docs/manual-qa.md)
+- [Project memory](docs/project-memory.md)
 
 ## Структура проекта
 
@@ -46,7 +50,11 @@
 ├── app/
 ├── docs/
 │   ├── idea.md
-│   └── how-to-run.md
+│   ├── how-to-run.md
+│   ├── manual-qa.md
+│   ├── project-memory.md
+│   ├── roadmap.md
+│   └── status.md
 ├── .gitignore
 └── README.md
 ```
